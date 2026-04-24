@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Leaderboard — Startup Simulator</title>
+
+<script>(function(){try{if(localStorage.getItem('startup-sim-crt')==='off'){document.documentElement.dataset.crtOff='1';}}catch(e){}})()</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --pixel-green:  #39ff14;
+    --pixel-yellow: #ffe600;
+    --pixel-blue:   #00cfff;
+    --pixel-red:    #ff3c3c;
+    --pixel-purple: #b44fff;
+    --pixel-orange: #ff8c00;
+    --bg-dark:  #0a0a1a;
+    --bg-mid:   #111128;
+    --bg-card:  #161630;
+    --font-pixel: 'Press Start 2P', monospace;
+    --font-vt:    'VT323', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg-dark);
+    color: #e0e0e0;
+    font-family: var(--font-vt);
+    font-size: 20px;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+    pointer-events: none; z-index: 9999; transition: opacity 0.3s;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none; z-index: 9998; transition: opacity 0.3s;
+  }
+  body.crt-off::before, [data-crt-off] body::before { opacity: 0; }
+  body.crt-off::after, [data-crt-off] body::after { opacity: 0; }
+
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 60px; border-bottom: 3px solid var(--pixel-green);
+    background: rgba(10,10,26,0.96); backdrop-filter: blur(4px);
+    position: sticky; top: 0; z-index: 1000;
+  }
+  .nav-logo {
+    font-family: var(--font-pixel); font-size: 10px; color: var(--pixel-green);
+    text-shadow: 0 0 12px var(--pixel-green); text-decoration: none; line-height: 1.8;
+    transition: text-shadow 0.2s;
+  }
+  .nav-logo:hover { text-shadow: 0 0 20px var(--pixel-green); }
+
+  .header-section { padding: 60px 20px; text-align: center; position: relative; }
+  .hero-grid {
+    position: absolute; inset: 0; z-index: -1;
+    background-image: linear-gradient(rgba(57,255,20,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .page-title {
+    font-family: var(--font-pixel); font-size: clamp(18px, 4vw, 32px);
+    color: var(--pixel-yellow); text-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+    margin-bottom: 10px;
+  }
+  .page-subtitle { font-family: var(--font-pixel); font-size: 8px; color: var(--pixel-green); letter-spacing: 2px; }
+
+  .container { max-width: 900px; margin: 0 auto 100px; padding: 0 20px; }
+  .leaderboard-wrap {
+    background: var(--bg-card); border: 3px solid var(--pixel-green);
+    box-shadow: 8px 8px 0 rgba(57,255,20,0.15); overflow: hidden;
+  }
+  .lb-header {
+    background: var(--pixel-green); padding: 18px 28px; display: grid;
+    grid-template-columns: 80px 1fr 180px 120px; gap: 12px;
+    font-family: var(--font-pixel); font-size: 8px; color: #000;
+  }
+  .lb-row {
+    display: grid; grid-template-columns: 80px 1fr 180px 120px; gap: 12px;
+    padding: 20px 28px; border-bottom: 2px solid rgba(57,255,20,0.1);
+    align-items: center; transition: background 0.2s;
+  }
+  .lb-row:hover { background: rgba(57,255,20,0.05); }
+  .lb-row:last-child { border-bottom: none; }
+
+  .rank { font-family: var(--font-pixel); font-size: 12px; color: #555; }
+  .rank.gold { color: var(--pixel-yellow); text-shadow: 0 0 10px var(--pixel-yellow); }
+  .rank.silver { color: #c0c0c0; }
+  .rank.bronze { color: var(--pixel-orange); }
+
+  .ceo-name { font-family: var(--font-pixel); font-size: 8px; color: #fff; }
+  .company-name { font-family: var(--font-vt); font-size: 22px; color: var(--pixel-blue); }
+  .score { font-family: var(--font-pixel); font-size: 8px; color: var(--pixel-green); text-align: right; }
+
+  .btn {
+    font-family: var(--font-pixel); font-size: 8px; padding: 12px 24px;
+    text-decoration: none; display: inline-block; cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s; border: none;
+  }
+  .btn-back { background: transparent; color: var(--pixel-yellow); border: 2px solid var(--pixel-yellow); box-shadow: 4px 4px 0 #7a6600; }
+  .btn-back:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #7a6600; }
+
+  .crt-toggle { font-family: var(--font-pixel); font-size: 6px; background: none; color: #3a3a5a; border: 2px solid #222; padding: 7px 12px; cursor: pointer; }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .lb-header, .lb-row { grid-template-columns: 50px 1fr 100px; padding: 15px; }
+    .lb-header span:nth-child(3), .company-name { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">STARTUP<br>SIMULATOR</a>
+    <div style="display: flex; gap: 15px; align-items: center;">
+      <button class="crt-toggle" id="crtToggle">CRT: ON</button>
+      <a href="index.html" class="btn btn-back">← BACK</a>
+    </div>
+  </nav>
+
+  <header class="header-section">
+    <div class="hero-grid"></div>
+    <h1 class="page-title">GLOBAL HALL OF FAME</h1>
+    <p class="page-subtitle">SEASON 07 — TOP FOUNDERS</p>
+  </header>
+
+  <div class="container">
+    <div class="leaderboard-wrap">
+      <div class="lb-header">
+        <span>RANK</span>
+        <span>CEO</span>
+        <span>COMPANY</span>
+        <span style="text-align: right;">VALUATION</span>
+      </div>
+
+      <div class="lb-row">
+        <span class="rank gold">#1</span>
+        <span class="ceo-name">PixelWizard_99</span>
+        <span class="company-name">Neon Dreams AI</span>
+        <span class="score">$12.4B</span>
+      </div>
+
+      <div class="lb-row">
+        <span class="rank silver">#2</span>
+        <span class="ceo-name">SaaS_Queen</span>
+        <span class="company-name">CloudBit Systems</span>
+        <span class="score">$8.1B</span>
+      </div>
+
+      <div class="lb-row">
+        <span class="rank bronze">#3</span>
+        <span class="ceo-name">VentureViper</span>
+        <span class="company-name">BlockScale Lab</span>
+        <span class="score">$5.7B</span>
+      </div>
+
+      <div class="lb-row">
+        <span class="rank">#4</span>
+        <span class="ceo-name">ByteCommander</span>
+        <span class="company-name">DataFlow Corp</span>
+        <span class="score">$3.2B</span>
+      </div>
+
+      <div class="lb-row">
+        <span class="rank">#5</span>
+        <span class="ceo-name">EquityEnthusiast</span>
+        <span class="company-name">Pivot Master Inc</span>
+        <span class="score">$1.9B</span>
+      </div>
+
+      <div class="lb-row">
+        <span class="rank">#6</span>
+        <span class="ceo-name">The_Grinder</span>
+        <span class="company-name">CoffeeCode SaaS</span>
+        <span class="score">$950M</span>
+      </div>
+    </div>
+
+    <p style="text-align: center; font-family: var(--font-pixel); font-size: 6px; color: #444; margin-top: 30px; letter-spacing: 2px;">
+      UPDATED EVERY 24 HOURS • NEXT RESET IN 12:45:02
+    </p>
+  </div>
+
+  <script>
+    const body = document.body;
+    const crtBtn = document.getElementById('crtToggle');
+    
+    function updateCRT(isOff) {
+      if (isOff) {
+        body.classList.add('crt-off');
+        document.documentElement.dataset.crtOff = '1';
+        crtBtn.textContent = 'CRT: OFF';
+        localStorage.setItem('startup-sim-crt', 'off');
+      } else {
+        body.classList.remove('crt-off');
+        delete document.documentElement.dataset.crtOff;
+        crtBtn.textContent = 'CRT: ON';
+        localStorage.setItem('startup-sim-crt', 'on');
+      }
+    }
+
+    crtBtn.addEventListener('click', () => {
+      updateCRT(!body.classList.contains('crt-off'));
+    });
+
+    if (localStorage.getItem('startup-sim-crt') === 'off') updateCRT(true);
+  </script>
+</body>
+</html>

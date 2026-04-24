@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual — Startup Simulator</title>
+
+<script>(function(){try{if(localStorage.getItem('startup-sim-crt')==='off'){document.documentElement.dataset.crtOff='1';}}catch(e){}})()</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+<style>
+  /* ─── SHARED DESIGN SYSTEM ─── */
+  :root {
+    --pixel-green:  #39ff14;
+    --pixel-yellow: #ffe600;
+    --pixel-blue:   #00cfff;
+    --pixel-red:    #ff3c3c;
+    --bg-dark:  #0a0a1a;
+    --bg-card:  #161630;
+    --font-pixel: 'Press Start 2P', monospace;
+    --font-vt:    'VT323', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: var(--bg-dark);
+    color: #e0e0e0;
+    font-family: var(--font-vt);
+    font-size: 20px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── CRT & SCANLINE OVERLAYS ─── */
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+    pointer-events: none; z-index: 9999;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none; z-index: 9998;
+  }
+  body.crt-off::before, [data-crt-off] body::before { opacity: 0; }
+  body.crt-off::after, [data-crt-off] body::after { opacity: 0; }
+
+  /* ─── NAVIGATION ─── */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 60px; border-bottom: 3px solid var(--pixel-blue);
+    background: rgba(10,10,26,0.96); backdrop-filter: blur(4px);
+    position: sticky; top: 0; z-index: 1000;
+  }
+
+  .nav-logo { 
+    font-family: var(--font-pixel); font-size: 10px; color: var(--pixel-blue); 
+    text-decoration: none; line-height: 1.8;
+    transition: text-shadow 0.2s;
+  }
+  .nav-logo:hover {
+    text-shadow: 0 0 12px var(--pixel-blue);
+  }
+
+  /* ─── EXIT BUTTON ─── */
+  .btn-exit {
+    font-family: var(--font-pixel); font-size: 8px; padding: 12px 20px;
+    background: var(--pixel-blue); color: #000; text-decoration: none;
+    box-shadow: 4px 4px 0 #008eb0; cursor: pointer; border: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+    display: inline-block;
+  }
+  .btn-exit:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #008eb0; }
+
+  .crt-toggle {
+    font-family: var(--font-pixel); font-size: 6px; background: none;
+    color: #3a3a5a; border: 2px solid #222; padding: 7px 12px; cursor: pointer;
+  }
+
+  /* ─── CONTENT ─── */
+  .container { max-width: 800px; margin: 60px auto; padding: 0 20px; }
+
+  .guide-card {
+    background: var(--bg-card);
+    border: 3px solid var(--pixel-blue);
+    padding: 40px;
+    box-shadow: 10px 10px 0 rgba(0, 207, 255, 0.1);
+  }
+
+  h1 { font-family: var(--font-pixel); color: var(--pixel-blue); font-size: 24px; margin-bottom: 30px; text-align: center; }
+  
+  .step { margin-bottom: 40px; display: flex; gap: 20px; }
+  .step-num {
+    font-family: var(--font-pixel); background: var(--pixel-blue); color: #000;
+    width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 18px;
+  }
+
+  .step-content h2 { font-family: var(--font-pixel); font-size: 14px; color: var(--pixel-yellow); margin-bottom: 10px; }
+  .step-content p { font-size: 22px; color: #ccc; }
+
+  .pro-tip {
+    background: rgba(255, 230, 0, 0.1);
+    border-left: 4px solid var(--pixel-yellow);
+    padding: 15px; margin-top: 15px; font-family: var(--font-vt); color: var(--pixel-yellow);
+  }
+
+  @media (max-width: 600px) {
+    nav { padding: 15px 20px; }
+    .step { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">STARTUP<br>SIMULATOR</a>
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <button class="crt-toggle" id="crtToggle">CRT: ON</button>
+    <a href="index.html" class="btn-exit">← EXIT MANUAL</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="guide-card">
+    <h1>OPERATING MANUAL</h1>
+
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h2>FOUND YOUR EMPIRE</h2>
+        <p>Choose your niche: SaaS, FinTech, or Gaming. Each has different market volatility and growth multipliers.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h2>HIRE THE BEST</h2>
+        <p>Recruit devs, designers, and marketers. Watch out—high-tier talent has high-tier ego and burn rates.</p>
+        <div class="pro-tip">PRO TIP: Junior devs are cheap but introduce more bugs!</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h2>SHIP & ITERATE</h2>
+        <p>Push features to gain users. Every update is a gamble—will it go viral or crash your servers?</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h2>RAISE OR BOOTSTRAP</h2>
+        <p>Pitch to VCs for massive cash injections in exchange for equity, or stay independent and profitable.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <h2>SURVIVE THE CRASH</h2>
+        <p>The market turns every 10 minutes. Cut costs or burn through your reserves to stay alive.</p>
+      </div>
+    </div>
+
+    <p style="text-align: center; font-family: var(--font-pixel); font-size: 8px; color: var(--pixel-green); margin-top: 20px;">
+      GOOD LUCK, FOUNDER. DON'T GO BANKRUPT.
+    </p>
+  </div>
+</div>
+
+<script>
+    const body = document.body;
+    const crtBtn = document.getElementById('crtToggle');
+    
+    function updateCRT(isOff) {
+      if (isOff) {
+        body.classList.add('crt-off');
+        document.documentElement.dataset.crtOff = '1';
+        crtBtn.textContent = 'CRT: OFF';
+        localStorage.setItem('startup-sim-crt', 'off');
+      } else {
+        body.classList.remove('crt-off');
+        delete document.documentElement.dataset.crtOff;
+        crtBtn.textContent = 'CRT: ON';
+        localStorage.setItem('startup-sim-crt', 'on');
+      }
+    }
+
+    crtBtn.addEventListener('click', () => {
+      updateCRT(!body.classList.contains('crt-off'));
+    });
+
+    if (localStorage.getItem('startup-sim-crt') === 'off') updateCRT(true);
+</script>
+
+</body>
+</html>
